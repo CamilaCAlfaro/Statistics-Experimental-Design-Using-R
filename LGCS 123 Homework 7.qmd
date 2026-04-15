@@ -1,0 +1,382 @@
+---
+title: "Homework #7"
+author: Camila Alfaro
+date: 04/10/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Friday, April 10**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment.
+
+```{r}
+#| output: false
+library(tidyverse)
+library(rstatix)
+library(gt)
+library(openintro)
+library(psychTools)
+```
+
+For this assignment, you'll need the data from four .csv files that are provided on Canvas. Please download those files from Canvas and move them to your working directory. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 7" and keep the files there.
+
+To import the data from each file, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below. Repeat that for each file: **bigfive.csv**, **earlybird.csv**, **learning.csv**, and **stroop_extended.csv**.
+
+```{r}
+#| output: false
+library(readr)
+bigfive <- read_csv("bigfive.csv")
+View(bigfive)
+library(readr)
+earlybird <- read_csv("earlybird.csv")
+View(earlybird)
+library(readr)
+learning <- read_csv("learning.csv")
+View(learning)
+library(readr)
+stroop_extended <- read_csv("stroop_extended.csv")
+View(stroop_extended)
+```
+
+Questions 3 and 4 are adapted from problems in *An Introduction to Psychological Statistics**,*** by Foster, Lane, Scott, Hebl, and Guerra.
+
+## 1)
+
+For this question, please look at the data in **bigfive.csv**, which comes from our class survey from earlier in the semester. This shows each participant's score for each of the five dimensions of personality assessed by the 15-item Big Five Inventory. Each score is reported using a 1-7 scale.
+
+### a.
+
+Report the appropriate descriptive statistics for each of the five dimensions of personality.
+
+```{r}
+bigfive |> 
+  get_summary_stats(openness, type = "common") |> 
+  gt()
+bigfive |> 
+  get_summary_stats(conscientiousness, type = "common") |> 
+  gt()
+bigfive |> 
+  get_summary_stats(extroversion, type = "common") |> 
+  gt()
+bigfive |> 
+  get_summary_stats(agreeableness, type = "common") |> 
+  gt()
+bigfive |> 
+  get_summary_stats(neuroticism, type = "common") |> 
+  gt()
+```
+
+### b.
+
+At <https://www.psytoolkit.org/survey-library/big5-bfi-s.html>, you can find the expected values for young adults for each of these five dimensions of personality (openness: 4.54, conscientiousness: 5.70, extroversion: 4.92, agreeableness 5.30, neuroticism: 3.98). Please run one sample *t*-tests for each of the dimensions, comparing the data from our class to the expected values. Please also calculate Cohen's *d* for each *t*-test.
+
+```{r}
+# openness
+bigfive |>
+  t_test(formula = openness ~ 1, mu = 4.54, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+bigfive |>
+  cohens_d(formula = openness ~ 1, mu = 4.54) |>
+  gt() |>
+  fmt_auto()
+
+# conscientiousness
+bigfive |>
+  t_test(formula = conscientiousness ~ 1, mu = 5.70, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+bigfive |>
+  cohens_d(formula = conscientiousness ~ 1, mu = 5.70) |>
+  gt() |>
+  fmt_auto()
+
+# extroversion
+bigfive |>
+  t_test(formula = extroversion ~ 1, mu = 4.92, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+bigfive |>
+  cohens_d(formula = extroversion ~ 1, mu = 4.92) |>
+  gt() |>
+  fmt_auto()
+
+# agreeableness
+bigfive |>
+  t_test(formula = agreeableness ~ 1, mu = 5.30, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+bigfive |>
+  cohens_d(formula = agreeableness ~ 1, mu = 5.30) |>
+  gt() |>
+  fmt_auto()
+
+# neuroticism
+bigfive |>
+  t_test(formula = neuroticism ~ 1, mu = 3.98, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+bigfive |>
+  cohens_d(formula = neuroticism ~ 1, mu = 3.98) |>
+  gt() |>
+  fmt_auto()
+```
+
+### c.
+
+For each of the five tests you ran for part (b), please verbally describe the effect, along with the 95% confidence interval, and then report the results of the *t*-test in APA style. Make sure to include *t*, the degrees of freedom, the *p*-value, and the effect size.
+
+-   The average openness score for the class was 6.06 with a 95% CI \[5.66, 6.46\]. A one sample *t*-test revealed that this was significantly higher than the expected value for young adults of 4.54, *t*(10) = 8.50, *p* \< .001, *d* = 2.56.
+
+-   The average conscientiousness score for the class was 4.70 with a 95% CI of \[4.03, 5.36\]. A one sample *t*-test revealed that this was significantly lower than the expected value for young adults of 5.70, *t*(10) = -3.35, *p* = .007, *d* = -1.01.
+
+-   The average extroversion score for the class was 4.51 with a 95% CI of \[3.84, 5.19\]. A one sample *t*-test revealed that this was not significantly different from the expected value for young adults of 4.92, *t*(10) = -1.34, *p* = .210, *d* = -0.40.
+
+-   The average agreeableness score for the class was 5.24 with a 95% CI of \[4.41, 6.08\]. A one sample *t*-test revealed that this was not significantly different from the expected value for young adults of 5.30, *t*(10) = -0.15, *p* = .881, *d* = -0.05.
+
+-   The average neuroticism score for the class was 4.64 with a 95% CI of \[4.07, 5.20\]. A one sample *t*-test revealed that this was significantly higher than the expected value for young adults of 3.98, *t*(10) = 2.59, *p* = .027, *d* = 0.78.
+
+### d.
+
+Make a bar graph to display the results. Label the axes and include error bars. Error bars can display the standard deviation, standard error of the mean, or the confidence interval. Please make a note of which you choose.
+
+Note: Error bars display 95% confidence intervals.
+
+```{r}
+bigfive_long <- bigfive |>
+  pivot_longer(
+    cols = openness:neuroticism,
+    names_to = "dimension",
+    values_to = "score")
+
+bigfive_long |>
+  group_by(dimension) |>
+  get_summary_stats(score, type = "common") |>
+  ggplot(aes(x = dimension, y = mean)) +
+  geom_col(fill = "orange")+
+  geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.1) +
+  labs(x = "Personality Dimension", y = "Mean Score") +
+  theme_bw()
+```
+
+## 2)
+
+Next, please look at the data from the Stroop task in **stroop_extended.csv**. These results come from our class, as well as the LGCS 123 classes from the previous four years. This file reports reaction time in ms for both conditions: congruent and incongruent.
+
+### a.
+
+Report the appropriate descriptive statistics for the congruent and incongruent conditions.
+
+```{r}
+stroop_extended |>
+  group_by(condition) |>
+  get_summary_stats(RT, type = "common") |>
+  gt()
+```
+
+### b.
+
+Make a histogram for each of the conditions. Do these distributions appear to be normal?
+
+Yes, the distributions appear to be normal
+
+```{r}
+stroop_extended |>
+  filter(condition == "congruent") |>
+  ggplot(aes(x = RT)) +
+  geom_histogram(bins = 10, color = "orange", fill = "pink") +
+  labs(x = "Reaction Time (ms)", y = "Count") +
+  theme_bw()
+
+stroop_extended |>
+  filter(condition == "incongruent") |>
+  ggplot(aes(x = RT)) +
+  geom_histogram(bins = 10, color = "red", fill = "purple") +
+  labs(x = "Reaction Time (ms)", y = "Count") +
+  theme_bw()
+```
+
+### c.
+
+Which type of *t*-test would be most appropriate for comparing the means for the congruent and incongruent conditions? How do you know?
+
+A paired samples t-test would be most appropriate because the congruent and incongruent scores were collected from the same participants, making the data within-subjects with paired scores.
+
+### d.
+
+Please run the appropriate *t*-test and calculate Cohen's *d*.
+
+```{r}
+stroop_wide <- stroop_extended |>
+  pivot_wider(names_from = condition, values_from = RT)
+
+stroop_wide <- stroop_wide |>
+  mutate(difference = incongruent - congruent)
+
+stroop_wide |>
+  t_test(formula = difference ~ 1, mu = 0, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+stroop_wide |>
+  cohens_d(formula = difference ~ 1, mu = 0) |>
+  gt() |>
+  fmt_auto()
+```
+
+### e.
+
+Write a sentence verbally describing the effect, along with the 95% confidence interval, and then report the results of the *t*-test in APA style:
+
+Reaction times were 92.95 ms slower in the incongruent condition than in the congruent condition on average, with a 95% CI of \[67.99, 117.90\]. A paired-samples *t* test revealed that this difference was significant, *t*(55) = 7.46, *p* \< .001, *d* = 1.00.
+
+## 3)
+
+A researcher wants to know if there is a difference in how busy someone is based on whether that person identifies as an early bird or a night owl. The researcher gathers data from people in each group, coding the data so that higher scores represent higher levels of being busy, and tests for a difference between the two. Please open **earlybird.csv** to view the data.
+
+### a.
+
+Report the appropriate descriptive statistics.
+
+```{r}
+earlybird |>
+  filter(waketime == "earlybird") |>
+  get_summary_stats(busyscore, type = "common") |>
+  gt()
+
+earlybird |>
+  filter(waketime == "nightowl") |>
+  get_summary_stats(busyscore, type = "common") |>
+  gt()
+```
+
+### b.
+
+Which type of *t*-test would be most appropriate for comparing the means? How do you know?
+
+The most appropriate test would be an independent samples t-test because the two means come from different groups of people, meaning the design is between-subjects and therefore scores are independent.
+
+### c.
+
+Plan out the null and alternative hypotheses for the *t*-test.
+
+H₀: μ₁ = μ₂
+
+Hₐ: μ₁ ≠ μ₂
+
+### d.
+
+Please run the appropriate *t*-test and calculate Cohen's *d*.
+
+```{r}
+
+earlybird |>
+  t_test(formula = busyscore ~ waketime, var.equal = TRUE, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+earlybird |>
+  cohens_d(formula = busyscore ~ waketime, var.equal = TRUE) |>
+  gt() |>
+  fmt_auto()
+```
+
+### e.
+
+Write a sentence verbally describing the effect, along with the 95% confidence interval, and then report the results of the *t*-test in APA style.
+
+On average, busy scores were 7.17 points higher for early birds than for night owls with a 95% CI of \[2.12, 12.21\]. An independent-samples *t* test revealed that busy scores were significantly higher for early birds than for night owls, *t*(15) = 3.03, *p* = .008, *d* = 1.47.
+
+## 4)
+
+A professor wants to see how much students learn over the course of a semester. A pre-test is given before the class begins to see what students know ahead of time, and the same test is given at the end of the semester to see what students know at the end. The professor wonders whether scores changed significantly. Please open **learning.csv** to view the data.
+
+### a.
+
+Report the appropriate descriptive statistics.
+
+```{r}
+learning_long <- learning |>
+  pivot_longer(
+    cols = pretest:posttest,
+    names_to = "time",
+    values_to = "score")
+
+learning_long |>
+  group_by(time) |>
+  get_summary_stats(score, type = "common") |>
+  gt()
+```
+
+### b.
+
+Which type of *t*-test would be most appropriate for comparing the means? How do you know?
+
+A paired samples t-test would be most appropriate because the pre-test and post-test scores come from the same students. Since the data is within-subjects with paired scores, the means are not independent.
+
+### c.
+
+Plan out the null and alternative hypotheses for the *t*-test:
+
+H₀: μD = 0
+
+Hₐ: μD ≠ 0
+
+### d.
+
+Convert the `learning` data frame to long form so that you can use the `t_test()` function.
+
+```{r}
+learning_long <- learning |>
+  mutate(participant_id = row_number()) |>
+  pivot_longer(
+    cols = pretest:posttest,
+    names_to = "time",
+    values_to = "score")
+```
+
+### e.
+
+Please run the appropriate *t*-test and calculate Cohen's *d*.
+
+```{r}
+learning_long |>
+  t_test(formula = score ~ time, paired = TRUE, detailed = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+learning_long |>
+  cohens_d(formula = score ~ time, paired = TRUE) |>
+  gt() |>
+  fmt_auto()
+```
+
+### f.
+
+Write a sentence verbally describing the effect, along with the 95% confidence interval, and then report the results of the *t*-test in APA style.
+
+Post-test scores were on average 3.4 points higher than pre-test scores with a 95% CI of \[1.89, 4.91\]. A paired-samples *t* test revealed that this increase was statistically significant, *t*(19) = 4.70, *p* \< .001, *d* = 1.05.
