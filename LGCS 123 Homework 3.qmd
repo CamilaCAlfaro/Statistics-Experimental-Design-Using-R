@@ -1,0 +1,175 @@
+---
+title: "Homework #3"
+author: Camila Alfaro 
+date: 2/20/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Friday, February 20**.
+
+For this assignment, we will use data from two sources: the `palmerpenguins` package and the `pokemon` package. Please install the `pokemon` package now.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment. I recommend starting with `tidyverse`, `palmerpenguins`, and `pokemon`. If you end up using any others, you can add them later.
+
+```{r}
+#| output: false
+library(tidyverse)
+library(palmerpenguins)
+library(pokemon)
+```
+
+## 1)
+
+For the first question, let's try saving some data.
+
+### a.
+
+Perhaps you are interested in conducting an analysis of the number of students at each of the Claremont colleges. The student populations are as follows: 1400, 900, 1200, 1700, and 1100. In the code chunk below, please save a vector that includes all five of these values. Give it a descriptive name of your choice.
+
+```{r}
+Populations_of_the_5Cs <- (c(1400, 900, 1200, 1700, 1100))
+```
+
+### b.
+
+Use your vector to calculate the total number of students at the Claremont colleges.
+
+```{r}
+sum(Populations_of_the_5Cs)
+```
+
+### c.
+
+Use your vector to calculate the mean number of students per school.
+
+```{r}
+mean(Populations_of_the_5Cs)
+```
+
+### d.
+
+The numbers provided in part (a) were listed in the following order: CMC, HMC, Pitzer, Pomona, and Scripps. Please save a new vector with the names of the colleges. Then, create a data frame that combines the two vectors (i.e., the college names and the student populations).
+
+```{r}
+ Names_of_the_5Cs <- c("CMC","HMC","Pitzer","Pomona","Scripps")
+ data.frame(Names = Names_of_the_5Cs, Populations = Populations_of_the_5Cs) |> 
+   view()
+ Five_Cs_Data <- data.frame(Names = Names_of_the_5Cs, Populations = Populations_of_the_5Cs)
+```
+
+### e.
+
+How would the code change if you wanted to calculate the total number of students at the Claremont colleges using the new data frame instead of the vector? What if you wanted to calculate the mean number of students using the data frame? Please demonstrate below.
+
+```{r}
+sum(Five_Cs_Data$Populations) |> 
+  view()
+mean(Five_Cs_Data$Populations) |> 
+  view()
+```
+
+## 2)
+
+Next, we'll look at the `penguins` data set from the `palmerpenguins` package. Run the command below to view the data.
+
+```{r}
+view(penguins)
+```
+
+### a.
+
+How many penguins of each sex were included in the data set?
+
+```{r}
+penguins |> 
+  count(sex) |> 
+  view()
+
+# 165 F, 168 M, 11 NA #
+```
+
+### b.
+
+If you wanted to refer to only Adelie penguins from Biscoe island, what code would you use?
+
+```{r}
+penguins |> 
+  filter(species =="Adelie", island == "Biscoe")
+```
+
+### c.
+
+Sort the female Gentoo penguins in order from the smallest to the largest body mass.
+
+```{r}
+penguins |> 
+  filter(species == "Gentoo",sex=="female") |> 
+  arrange(body_mass_g)
+```
+
+### d.
+
+Refer to the penguins with a body mass over 4000 g [and]{.underline} a bill length less than 40 mm.
+
+```{r}
+penguins |> 
+  filter(body_mass_g > 4000, bill_length_mm < 40)
+```
+
+### e.
+
+Refer to the penguins with a body mass over 4000 g [or]{.underline} a bill length less than 40 mm.
+
+```{r}
+penguins |> 
+  filter(body_mass_g > 4000 | bill_length_mm < 40)
+```
+
+### f.
+
+Simplify the data frame so that it only includes species, sex, and body mass -- displayed in that order.
+
+```{r}
+penguins |> 
+  select(species, sex, body_mass_g)
+```
+
+## 3)
+
+Finally we'll look at the `pokemon` data set from the `pokemon` package. Run the command below to view the data.
+
+```{r}
+view(pokemon)
+```
+
+### a.
+
+How many Pokemon of each type are included in this data set?
+
+This is a deceptively tricky question! This data frame has two columns for type: type_1 and type_2. This is because Pokemon can have two types. For example, Bulbasaur is both grass type and poison type. What could you do to make sure that it is counted as both? Try a few things and see if you can figure it out!
+
+```{r}
+table(c(pokemon$type_1, pokemon$type_2))
+```
+
+### b.
+
+What are the top 10 fastest Pokemon from generation 1? Use the generation_id column to determine the generation, and the speed column to determine which Pokemon are fastest.
+
+```{r}
+pokemon |> 
+filter(generation_id==1) |> 
+  arrange(desc(speed))|> 
+  slice(1:10)
+```
