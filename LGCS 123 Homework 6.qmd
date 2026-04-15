@@ -1,0 +1,283 @@
+---
+title: "Homework #6"
+author: Camila Alfaro
+date: 03/27/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Friday, March 27**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment.
+
+```{r}
+#| output: false
+library(rstatix)
+library(tidyverse)
+library(gt)
+```
+
+For this assignment, you'll need the data from four .csv files that are provided on Canvas. Please download those files from Canvas and move them to your working directory. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 6" and keep the files there.
+
+To import the data from each file, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below. Repeat that for each file: **avatars.csv**, **grade_distribution.csv**, **false_memory.csv**, and **studying.csv**.
+
+```{r}
+#| output: false
+library(readr)
+avatars <- read_csv("avatars.csv")
+View(avatars)
+library(readr)
+grade_distribution <- read_csv("grade_distribution.csv")
+View(grade_distribution)
+library(readr)
+false_memory <- read_csv("false_memory.csv")
+View(false_memory)
+library(readr)
+studying <- read_csv("studying.csv")
+View(studying)
+```
+
+Questions 3, 4, and 5 are adapted from problems in *Statistics for the Behavioral Sciences**,*** by Gravetter and Wallnau.
+
+## 1)
+
+An elementary school runs a yearly survey asking for the favorite colors of each student. In a typical year, 30% of the students pick blue, 20% pick pink, 10% pick green, 10% pick purple, and 30% pick yellow. The distribution of favorite colors from this year's third graders is shown in the table below. Please run a $\chi^2$ goodness-of-fit test to find out whether this distribution differs significantly from a typical year.
+
+|          | Blue | Pink | Green | Purple | Yellow |
+|----------|------|------|-------|--------|--------|
+| Observed | 21   | 24   | 6     | 12     | 15     |
+
+### a.
+
+Plan out the null and alternative hypotheses for the $\chi^2$ goodness-of-fit test:
+
+Null hypothesis: The favorite color results in the sample follow the same pattern as the typical-year distribution.
+
+Alternative hypothesis: The favorite color results in the sample do not follow the same pattern as the typical-year distribution.
+
+### b.
+
+Run the $\chi^2$ goodness-of-fit test.
+
+```{r}
+colors <- c(21, 24, 6, 12, 15)
+colors |>
+  chisq_test(p = c(.30, .20, .10, .10, .30)) |>
+  gt()
+```
+
+### c.
+
+Calculate the expected frequencies.
+
+```{r}
+colors |>
+  chisq_test(p = c(.30, .20, .10, .10, .30)) |>
+  chisq_descriptives() |>
+  gt()
+```
+
+### d.
+
+Write a summary verbally describing the results of the $\chi^2$ goodness-of-fit test in APA style. Make sure to verbally describe the effect, report the test statistic and degrees of freedom, and include the *p*-value.
+
+A $\chi^2$ goodness-of-fit test showed that the observed frequencies of favorite colors differed significantly from the typical-year distribution, $\chi^2$ (4) = 10.46, *p* = .033.
+
+## 2)
+
+A researcher gives a survey that asks participants to indicate the study technique they believe to be most effective. The choices were (1) using flashcards, (2) reading the textbook, or (3) explaining the material to a friend. The researcher is interested in finding out whether the techniques were chosen with equal frequency. Please conduct a $\chi^2$ goodness-of-fit test on the data reported in **studying.csv**.
+
+### a.
+
+Calculate the observed frequencies of the different study techniques reported in the data set.
+
+```{r}
+table(studying$technique)
+```
+
+### b.
+
+Create a bar graph that displays the observed frequencies.
+
+```{r}
+studying |> 
+  ggplot(aes(x = technique)) +
+  geom_bar() +
+  labs(x = "Study Technique", y = "Observed Frequencies")
+```
+
+### c.
+
+Plan out the null and alternative hypotheses for the $\chi^2$ goodness-of-fit test:
+
+Null hypothesis: The three study techniques were chosen equally often.
+
+Alternative hypothesis: The three study techniques were not chosen equally often.
+
+### d.
+
+Run the $\chi^2$ goodness-of-fit test.
+
+```{r}
+table(studying$technique) |> 
+  chisq_test() |> 
+  chisq_descriptives() |> 
+  gt()
+```
+
+### e.
+
+Calculate the expected frequencies.
+
+```{r}
+(319 + 351 + 259)/3
+```
+
+### e.
+
+Write a summary verbally describing the results of the $\chi^2$ goodness-of-fit test.
+
+A $\chi^2$ goodness-of-fit test showed that the study techniques were not chosen equally often, $\chi^2$ (2) = 14.09, *p* \< .001.
+
+## 3)
+
+A professor in the psychology department at a large university would like to determine whether there has been a significant change in grading practices over time. She knows that the overall grade distribution for the department in 1985 had 14% A's, 26% B's, 31% C's, 19% D's, and 10% F's. A sample of 200 grades from last semester is reported in **grade_distribution.csv**.
+
+### a.
+
+Calculate the observed frequencies of the grades reported in the data set.
+
+```{r}
+table(grade_distribution$grade)
+```
+
+### b.
+
+Plan out the null and alternative hypotheses for the $\chi^2$ goodness-of-fit test:
+
+Null hypothesis: The grade distribution from last semester matches the 1985 department distribution.
+
+Alternative hypothesis: The grade distribution from last semester does not match the 1985 department distribution.
+
+### c.
+
+Run the $\chi^2$ goodness-of-fit test.
+
+```{r}
+table(grade_distribution$grade) |> 
+  chisq_test(p = c(.14, .26, .31, .19, .10)) |> 
+  chisq_descriptives() |> 
+  gt()
+```
+
+### d.
+
+Write a summary verbally describing the results of the $\chi^2$ goodness-of-fit test.
+
+A $\chi^2$ goodness-of-fit test showed that the grade distribution from last semester did not differ significantly from the 1985 department distribution, $\chi^2$ (4) = 4.50, *p* = .342.
+
+## 4)
+
+In a classic study, Loftus and Palmer (1974) investigated the relationship between witnesses' memories for an event and the questions they are asked after witnessing the event. In the study, participants watched a film of a car accident and then were questioned about the accident. One group was asked how fast the cars were going when they "smashed into" each other, a second group was asked about the speed when the cars "hit" each other, and a third control group was not asked any question about the speed of the cars. A week later, the participants returned to answer additional questions about the accident, including whether they recalled seeing any broken glass. Although there was no broken glass in the film, several participants claimed to remember seeing it.
+
+The results are reported in **false_memory.csv**. Please run a $\chi^2$ test for independence to find out whether there is any association between the verb used in the question and the likelihood of falsely recalling broken glass.
+
+### a.
+
+Calculate the observed frequencies.
+
+```{r}
+table(false_memory$verb, false_memory$broken_glass)
+```
+
+### b.
+
+Create a bar graph that displays the observed frequencies.
+
+```{r}
+false_memory |> 
+  ggplot(aes(x = verb)) +
+  geom_bar(aes(fill = broken_glass), position = "dodge") +
+  labs(x = "Verb Used in Question", y = "Observed Frequencies")
+```
+
+### c.
+
+Plan out the null and alternative hypotheses for the $\chi^2$ test for independence:
+
+Null hypothesis: There is no association between the verb used in the question and falsely recalling broken glass.
+
+Alternative hypothesis: There is an association between the verb used in the question and falsely recalling broken glass.
+
+### d.
+
+Run the $\chi^2$ test for independence.
+
+```{r}
+table(false_memory$verb, false_memory$broken_glass) |> 
+  chisq_test() |> 
+  chisq_descriptives() |> 
+  gt()
+```
+
+### e.
+
+Calculate the expected frequencies.
+
+```{r}
+(50*121)/150
+(50*29)/150
+```
+
+### f.
+
+Write a summary verbally describing the results of the $\chi^2$ test for independence:
+
+A $\chi^2$ test for independence showed a significant association between the verb used in the question and falsely recalling broken glass, $\chi^2$ (2) = 7.78, *p* = .020.
+
+## 5)
+
+A recent study by Bélisle and Bodur (2010) indicated that people tend to select video game avatars with characteristics similar to themselves. Participants who had created avatars for a virtual community game completed a questionnaire about their personalities. An independent group of viewers examined the avatars and recorded their impressions of the avatars. One personality characteristic considered was extroversion (i.e. extroverted vs. introverted). The result are reported in **avatars.csv**.
+
+### a.
+
+Calculate the observed frequencies.
+
+```{r}
+table(avatars$participant_personality, avatars$avatar_personality)
+```
+
+### b.
+
+Plan out the null and alternative hypotheses for the appropriate type of $\chi^2$ test:
+
+Null hypothesis: There is no association between participants’ personalities and the personalities of the avatars they selected.
+
+Alternative hypothesis: There is an association between participants’ personalities and the personalities of the avatars they selected.
+
+### c.
+
+Run the $\chi^2$ test.
+
+```{r}
+table(avatars$participant_personality, avatars$avatar_personality) |> 
+  chisq_test() |> 
+  chisq_descriptives() |> 
+  gt()
+```
+
+### d.
+
+Write a summary verbally describing the results of the $\chi^2$ test:
+
+A $\chi^2$ test for independence showed that there was not a significant association between participants’ personalities and the personalities of the avatars they selected, $\chi^2$ (1) = 3.32, *p* = .068.
