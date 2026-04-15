@@ -1,0 +1,250 @@
+---
+title: "Homework #5"
+author: Camila Alfaro
+date: 03/05/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Friday, March 6**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment. I recommend starting with `tidyverse`, `rstatix`, and `gt`. We'll also need the data from `pokemon`. If you end up using any other packages, you can add them later.
+
+```{r}
+#| output: false
+library(tidyverse)
+library(rstatix)
+library(gt)
+library(ggplot2)
+library(pokemon)
+```
+
+For this assignment, you'll need the **stroop_extended.csv** data file that is provided on Canvas. This contains the results from the Stroop demonstration experiment completed by our class, as well as the LGCS 123 classes from previous years. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 5" and keep all the relevant files there.
+
+To import the data, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below.
+
+```{r}
+#| output: false
+library(readr)
+stroop_extended <- read_csv("stroop_extended.csv")
+View(stroop_extended)
+```
+
+## 1)
+
+Let's start with the data from **stroop_extended.csv**. This file reports reaction times for the congruent and incongruent conditions. It includes data from participants who have taken this course over the last five years.
+
+### a.
+
+Please calculate and report the appropriate descriptive statistics for reaction times from both conditions.
+
+```{r}
+desc_stats_of_stroop_conditions <- stroop_extended |> 
+  group_by(condition) |> 
+  get_summary_stats(RT, show = c("mean", "sd", "median", "iqr"))
+desc_stats_of_stroop_conditions
+```
+
+### b.
+
+Use the `gt` package to display the descriptive statistics from part (a) as a table. Add a header and, if necessary, adjust the font settings so that the table fits on the page.
+
+```{r}
+desc_stats_of_stroop_conditions |>
+  gt() |> 
+  tab_options(table.font.size = 12,
+              table.font.names = "Fira Code") |> 
+  tab_header("Extended Stroop Task Descriptive Statistics") |> 
+  tab_source_note("Data from stroop_extended.csv")
+```
+
+### c.
+
+Make a bar graph to display the mean reaction times for both of the two conditions: congruent and incongruent. Include error bars to show the standard deviation.
+
+For this graph and all of the following, please make sure that each axis is labeled appropriately.
+
+```{r}
+ desc_stats_of_stroop_conditions |> 
+   ggplot(aes(x=condition, y=mean))+
+   geom_col(
+     aes(fill=condition), show.legend=FALSE, col="purple")+
+     geom_errorbar(
+    aes(ymin=mean-sd, ymax=mean+sd), width=.02)+
+   labs(y = "Mean RT", x = "Stroop Task Condition")+
+   scale_fill_brewer(palette="Blues")+
+  theme_bw()
+```
+
+### d.
+
+We're going to make a scatterplot from this data set, but first we need to make some changes to the data frame. Please run the code chunk below.
+
+```{r}
+stroop_wide <- stroop_extended |> 
+  pivot_wider(names_from = "condition", values_from = "RT")
+stroop_wide
+```
+
+Look at the output. What do you notice? How is `stroop_wide` different from `stroop_extended`? (You'll learn this function later on in the course. For now, use your observations to try to figure out what it does.)
+
+**Stroop_wide is different from stroop_extended because the congruent and incongruent conditions are no longer stacked in rows and instead appear as separate columns with both reaction times shown in the same row.**
+
+Make a scatterplot from `stroop_wide` that shows the relationship between congruent and incongruent reaction times. Use dots of different colors to indicate the year of data collection.
+
+(Hint: Try mapping the year as `color = factor(year)`. This will treat the year variable as discrete rather than continuous, which will make it easier to adjust the colors.)
+
+```{r}
+stroop_wide |> 
+  ggplot(aes(x = incongruent, y = congruent, color = factor(year))) + 
+  geom_point(size = 2, shape = "circle", alpha = 0.5)+
+  labs(x = "Incongruent RT", y = "Congruent RT")
+```
+
+### f.
+
+Compare your graphs in parts (c) and (e). When would a bar graph like (c) be more useful? When would a scatterplot like (e) be more useful?
+
+**A bar graph like in part (c) is more helpful for representing comparisons between the average reaction times across the two Stroop conditions. A scatterplot like in part (e) is more useful for showing the relationship between congruent and incongruent reaction times across participants.**
+
+## 2)
+
+Next we'll examine the `pokemon` data frame from the `pokemon` package. You may want to run the `view()` function for a convenient look at the data frame.
+
+### a.
+
+Is the strength of a Pokemon's attack associated with the strength of its special attack? Make a scatterplot to find out.
+
+```{r}
+pokemon |> 
+  View()
+pokemon_attack_plot <- pokemon |> 
+   ggplot(aes(x=attack, y=special_attack))+
+    geom_point(color = "green", size = 2, shape = "circle", alpha = 0.5)+
+   labs(y = "Pokemon Special Attack Strengths", x = "Pokemon Attacks")
+ pokemon_attack_plot
+```
+
+### b.
+
+Is a Pokemon's height associated with its weight? Make a scatterplot to find out. Use `facet_wrap()` to visualize whether this has changed over the generations (i.e., based on the generation_id variable).
+
+```{r}
+ pokemon_measurement_plot <- pokemon |> 
+   ggplot(aes(x=height, y=weight))+
+    geom_point(color = "green", size = 2, shape = "circle", alpha = 0.5)+
+facet_wrap(~generation_id)
+pokemon_measurement_plot
+```
+
+### c.
+
+Make a histogram showing the distribution of scores for the defense variable.
+
+```{r}
+defense_variable_scores <- pokemon |> 
+  ggplot(aes(x = defense)) +
+  geom_histogram(color = "blue", fill = "green", bins=15)
+defense_variable_scores
+```
+
+## 3)
+
+We'll continue to use the `pokemon` data set, but first we need to make some adjustments.
+
+### a.
+
+Please run the code chunk below.
+
+```{r}
+pokemon |> 
+  view()
+pokemon_by_type <- pokemon |> 
+  pivot_longer(type_1:type_2, names_to = "type_number", values_to = "type") |> 
+view()
+```
+
+What do you notice? How does the `pokemon_by_type` data frame differ from `pokemon`? (You'll learn this function later on in the course. For now, use your observations to try to figure out what it does.)
+
+**The pokemon_by_type data frame differs from the pokemon data frame in that instead of having two seperate columns for type_1 and type_2 pokemon, the data is now combined into a single column called type_number.**
+
+### b.
+
+Please also run the following code chunk. This one should look more familiar.
+
+```{r}
+pokemon_by_type <- pokemon_by_type |> 
+  drop_na("type") |> 
+  relocate(type, .after = pokemon) |> 
+  select(id:type, height:speed, generation_id)
+pokemon_by_type |> 
+  view()
+```
+
+What did this code chunk do to the `pokemon_by_type` data frame?
+
+**This code chunk removed the type category from its original location in the data frame and moved it to be directly after the pokemon column. It then selects the exact range of categorical data that is displayed when running the code, in this case namely being id through type, height through speed, and then lastly generation_id.**
+
+### c.
+
+Now that we have our data prepared, we can make some graphs using `pokemon_by_type`. Please make a bar graph displaying the mean HP for each type of Pokemon. Add error bars to show the standard deviation for each type. Use the `fill =` aesthetic to make each bar a different color.
+
+```{r}
+mean_hp_pokemon_types <- pokemon_by_type |> 
+  group_by(type) |> 
+  get_summary_stats(hp)|> 
+  select(type, mean, sd)
+
+mean_hp_pokemon_types|> 
+   ggplot(aes(x=type, y=mean, fill=type))+
+  geom_col(show.legend=FALSE)+
+  geom_errorbar(aes(ymin=mean-sd, ymax=mean+sd), width=.05)+
+  labs(y = "Mean HP", x = "Pokemon Type")
+```
+
+### d.
+
+Next, pick four types (your choice!) and filter the `pokemon_by_type` data frame so that it includes only those four types.
+
+```{r}
+filtered_pokemon_by_type <- pokemon_by_type |> 
+filter(type=="ice"|type=="rock"|type=="grass"|type=="poison")
+```
+
+Use the filtered data frame to create a line graph. This line graph should show the mean attack score at each generation number. The graph should have four lines on it -- one for each type. You can treat "type" and "generation_id" as grouping variables, and "attack" as the measure.
+
+```{r}
+mean_attack_of_pokemon_types <- filtered_pokemon_by_type |>
+  group_by(type, generation_id) |>
+  get_summary_stats(attack, type = "common")
+
+mean_attack_of_pokemon_types |> 
+  ggplot(aes(x = generation_id, y = mean, group = type)) +
+  geom_line(aes(color = type)) +
+  geom_errorbar(aes(ymin = mean - sd, ymax = mean + sd), width = 0.5)
+```
+
+### e.
+
+Make a boxplot showing the speed variable for the four Pokemon types you selected in part (d).
+
+```{r}
+filtered_pokemon_by_type |> 
+  ggplot(aes(x = type, y = speed))+
+  geom_boxplot(
+    aes(fill = type),
+    show.legend = FALSE) +
+  labs(x="Pokemon Type", y = "Speed")+
+  theme_classic() +
+  scale_fill_brewer(palette = "Oranges")
+```
