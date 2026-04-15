@@ -1,0 +1,316 @@
+---
+title: "Homework #4"
+author: Camila Alfaro
+date: 02/27/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Friday, February 27**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment. I recommend starting with `tidyverse` and `rstatix`. If you end up using any others, you can add them later.
+
+```{r}
+#| output: false
+library(tidyverse)
+library(rstatix)
+```
+
+For this assignment, you'll need the data from seven .csv files that are provided on Canvas. These report the results of the Data Collection survey that the class completed last week. Please download those files from Canvas and move them to your working directory. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 4" and keep the files there. (As you might imagine, you'll have quite a few data files by the end of the semester!)
+
+To import the data from each file, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below. Repeat that for each file: **animals.csv**, **browser.csv**, **colors.csv**, **distance.csv**, **lexical_decision.csv**, **stroop.csv**, and **vegetables.csv**.
+
+```{r}
+#| output: false
+library(readr)
+animals <- read_csv("animals.csv")
+browser <- read_csv("browser.csv")
+colors <- read_csv("colors.csv")
+distance <- read_csv("distance.csv")
+lexical_decision <- read_csv("lexical_decision.csv")
+stroop <- read_csv("stroop.csv")
+vegetables <- read_csv("vegetables.csv")
+```
+
+## 1)
+
+For the first question, please look at the data from **distance.csv**. This file reports the answers to the question "What is the distance between your hometown and Claremont in miles?"
+
+### a.
+
+Please calculate two measures of central tendency: the mean and the median.
+
+```{r}
+library(readr)
+distance <- read_csv("distance.csv")
+mean(distance$miles) 
+median(distance$miles)
+```
+
+Type your answers in the table below:
+
+|        | Distance of Hometowns from Claremont |
+|--------|--------------------------------------|
+| Mean   | 2268.46                              |
+| Median | 972                                  |
+
+: Descriptive Statistics of Distance Between Students' Hometowns and Claremont (in miles)
+
+### b.
+
+For this measure, which measure of central tendency is most informative? Explain your answer below.
+
+The mean is much bigger than the median in this dataset, illustrating how a few large distance values are pulling the average upward. Because the mean is more skewed by extreme values, it does not represent the typical distance as well as the median, which is more informative since it is not influenced by outliers, and better reflects the center value of the data.
+
+## 2)
+
+For this question, you'll need the data from the lexical decision task, which you can find in the file called **lexical_decision.csv**. This file reports reaction time in ms for each of the three conditions: related words, unrelated words, and nonsense words.
+
+### a.
+
+Identify the scale of measurement for these results: Ratio
+
+### **b.**
+
+For practice, let's try to calculate several of the descriptive statistics we know. For each of the three conditions, please use R to find the following: mean, median, range, IQR, standard deviation, and variance.
+
+```{r}
+library(readr)
+lexical_decision <- read_csv("lexical_decision.csv")
+lexical_decision |> 
+get_summary_stats(related_RT)
+var(lexical_decision$related_RT)
+range(lexical_decision$related_RT)
+1310-514
+lexical_decision |> 
+get_summary_stats(unrelated_RT)
+var(lexical_decision$unrelated_RT)
+range(lexical_decision$unrelated_RT)
+1029-562
+lexical_decision |> 
+get_summary_stats(nonsense_RT)
+var(lexical_decision$nonsense_RT)
+range(lexical_decision$nonsense_RT)
+1237-560
+```
+
+Type your answers in the table below:
+
+| Condition          | Related | Unrelated | Nonsense |
+|--------------------|---------|-----------|----------|
+| Mean               | 766     | 706       | 794      |
+| Median             | 671     | 691       | 769      |
+| Range              | 796     | 467       | 677      |
+| IQR                | 256     | 103       | 41.5     |
+| Standard deviation | 257     | 125       | 170      |
+| Variance           | 66151   | 15663     | 29020    |
+
+: Descriptive Statistics of Lexical Decision Task Reaction Times
+
+### c.
+
+You can read more about the task here: <https://www.psytoolkit.org/experiment-library/ldt.html>. Do the results from our class seem to follow the expected pattern?
+
+The results from our class do not seem to follow the expected pattern, as they do not entirely reflect the common observation that participants tend to perform better on lexical decision tasks when the words presented to them are related. The data from our class more so demonstrates that on average, participants took longer to respond when it came to identifying words that were related, and were quicker to respond in identifying unrelated words.
+
+## 3)
+
+Next, please look at the data from the Stroop task in **stroop.csv**. This file reports reaction time in ms for both conditions: congruent and incongruent.
+
+### a.
+
+Identify the scale of measurement: Ratio
+
+### b.
+
+Report the appropriate descriptive statistics for each condition. There's no need to report every statistic like in the previous question -- instead, please choose descriptive statistics that are appropriate for this scale of measurement.
+
+```{r}
+library(readr)
+stroop <- read_csv("stroop.csv")
+congruent_stroop <- stroop |> 
+  filter(condition=="congruent")
+mean(congruent_stroop$RT)
+median(congruent_stroop$RT)
+sd(congruent_stroop$RT)
+range(congruent_stroop$RT)
+1155-520
+incongruent_stroop <- stroop |> 
+  filter(condition=="incongruent")
+mean(incongruent_stroop$RT)
+median(incongruent_stroop$RT)
+sd(incongruent_stroop$RT)
+range(incongruent_stroop$RT)
+1282-663
+```
+
+Please write out your answers here. You can make a table or present the answers in any form that makes sense.
+
+### c.
+
+|                    |               |                 |
+|--------------------|---------------|-----------------|
+| **Condition**      | **Congruent** | I**ncongruent** |
+| Mean               | 797           | 892             |
+| Median             | 810           | 859             |
+| Standard Deviation | 185.23        | 205.04          |
+| Range              | 635           | 619             |
+
+: Descriptive Statistics of Stroop Task Reaction Times
+
+The data in this file are organized differently than the data from the previous question. How did you handle this in R?
+
+I calculated the descriptive statistics of this specific data set by first filtering the reaction times based on whether or not they were congruent or incongruent and then calculating the mean, median, and standard deviation, and range of each condition separately.
+
+### d.
+
+You can read more about the task here: <https://www.psytoolkit.org/experiment-library/stroop.html>. Do the results from our class seem to follow the expected pattern?
+
+Yes, the results from our class do seem to follow the expected pattern, as they indicate how the stroop task demonstrates the increased difficulty in identifying the ink color of a word if the ink color and word itself do not match, hence why it took participants from our class longer on average to identify incongruent examples over congruent ones.
+
+## 4)
+
+Please look at **browser.csv**. This data set shows the answers to the question "Which browser do you use the most frequently?"
+
+### a.
+
+Identify the scale of measurement: Nominal
+
+### b.
+
+Report the appropriate descriptive statistics.
+
+```{r}
+library(readr)
+browser <- read_csv("browser.csv")
+View(browser)
+get_mode(browser$most_used)
+```
+
+Please write out your answers here: Chrome
+
+## 5)
+
+Please look at **colors.csv**. This data set shows responses to the question that asked you to rank several colors (blue, purple, green, pink, and yellow) based on your preferences.
+
+### a.
+
+Identify the scale of measurement: Ordinal
+
+### b.
+
+To simplify, we'll focus on two colors: blue and yellow. Please report the appropriate descriptive statistics for those colors.
+
+```{r}
+library(readr)
+colors <- read_csv("colors.csv")
+View(colors)
+median(colors$blue_rank)
+get_mode(colors$blue_rank)
+range(colors$blue_rank)
+median(colors$yellow_rank)
+get_mode(colors$yellow_rank)
+range(colors$yellow_rank)
+```
+
+Please write out your answers here:
+
+|        |      |        |
+|--------|------|--------|
+| Color  | Blue | Yellow |
+| Median | 1    | 5      |
+| Mode   | 1    | 5      |
+| Range  | 3    | 4      |
+
+: Descriptive Statistics of Color Rankings
+
+## 6)
+
+Please open **animals.csv**. You were asked to rate your agreement with statements about the cuteness of dogs, lizards, and spiders on a scale from "strongly disagree" to "strongly disagree". These responses have been coded using a 1-5 scale, where 1 represents "strongly disagree", 2 represents "disagree", 3 represents "don't know", 4 represents "agree", and 5 represents "strongly agree".
+
+### a.
+
+Identify the scale of measurement: Ordinal
+
+### b.
+
+Report the appropriate descriptive statistics for each of the three animals.
+
+```{r}
+library(readr)
+animals <- read_csv("animals.csv")
+View(animals)
+median(animals$dogs)
+get_mode(animals$dogs)
+range(animals$dogs)
+median(animals$lizards)
+get_mode(animals$lizards)
+range(animals$lizards)
+median(animals$spiders)
+get_mode(animals$spiders)
+range(animals$spiders)
+```
+
+Please write out your answers here:
+
+| Animal | Dogs | Lizards | Spiders |
+|--------|------|---------|---------|
+| Median | 5    | 3       | 2       |
+| Mode   | 5    | 3, 4    | 1       |
+| Range  | 1    | 4       | 3       |
+
+: Descriptive Statistics for Animal Cuteness Ratings
+
+## 7)
+
+Finally, let's open **vegetables.csv**. You were asked to rate your agreement with statements about the deliciousness of broccoli, kale, and carrots on a scale from "strongly disagree" to "strongly disagree". These responses have been coded using a 1-5 scale.
+
+### a.
+
+Identify the scale of measurement: Ordinal
+
+### b.
+
+Imagine you want to re-code these results using a scale from -2 to +2 instead of from 1 to 5. The advantage of this approach would be that the results would be easy to interpret, since positive values would indicate that the vegetable is delicious, while negative values would indicate that it is not. How would you do this using R?
+
+You would have to mutate the data set to subtract 3 from each response that was reported on a 1-5 scale in order to accurately adjust the data to the ratio of the new -2 to +2 scale.
+
+### c.
+
+Please re-code the results as described in part b, then report the appropriate descriptive statistics.
+
+```{r}
+library(readr)
+vegetables <- read_csv("vegetables.csv")
+View(vegetables)
+ Vegetable_data <- vegetables |> 
+    mutate(broccoli = broccoli-3, 
+           kale = kale-3, 
+           carrots = carrots-3)
+ median(Vegetable_data$broccoli)
+ range(Vegetable_data$broccoli)
+ median(Vegetable_data$kale)
+ range(Vegetable_data$kale)
+ median(Vegetable_data$carrots)
+ range(Vegetable_data$carrots)
+```
+
+Please write out your answers here:
+
+|           |              |          |             |
+|-----------|--------------|----------|-------------|
+| Vegetable | **Broccoli** | **Kale** | **Carrots** |
+| Median    | 1            | 0        | 1           |
+| Range     | 3            | 4        | 4           |
+
+: Descriptive Statistics of Vegetable Deliciousness Ratings
