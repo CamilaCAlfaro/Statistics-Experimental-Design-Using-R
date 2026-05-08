@@ -1,0 +1,312 @@
+---
+title: "Homework #10"
+author: Camila Alfaro
+date: 05/05/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Tuesday, May 5**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment.
+
+```{r}
+#| output: false
+library(correlation)
+library(tidyverse)
+library(rstatix)
+library(gt)
+library(moderndive)
+library(pokemon)
+```
+
+For this assignment, you'll need the data from two .csv files that are provided on Canvas. Please download those files from Canvas and move them to your working directory. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 10" and keep the files there.
+
+To import the data from each file, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below. Repeat that for each file: **drawing.csv** and **testtaking.csv**.
+
+```{r}
+#| output: false
+library(readr)
+drawing <- read_csv("drawing.csv")
+View(drawing)
+testtaking <- read_csv("testtaking.csv")
+View(testtaking)
+```
+
+## 1)
+
+For this question, you'll need the data from **drawing.csv**, which reports the results of an experiment that asked participants to study a list of 18 nouns. For each word, participants were asked to use one of three different study strategies for 30 seconds: (1) "write", in which they repeatedly wrote the word as many times as possible, (2) "draw", in which they used a black marker to draw an image representing the word, and (3) "draw in color", in which they used colorful markers to draw an image representing the word. This file reports the number of words recalled in each of the three conditions. This experiment was conducted by students in a previous course in the LGCS department.
+
+### a.
+
+Could recall performance in one condition be used to predict recall performance in any of the others? To find out, please test for correlations between the three conditions.
+
+```{r}
+drawing |>
+  select(write, draw, drawincolor) |>
+  correlation() |>
+  display()
+```
+
+### b.
+
+Verbally describe the results of this correlational analysis and report the statistics in APA style:
+
+There was a significant positive correlation between recall in the write and draw conditions, *r*(47) = .51, *p* \< .001, 95% CI \[.27, .70\], indicating that participants who recalled more words in the write condition also tended to recall more words in the draw condition. There was no significant correlation between recall in the write and draw in color conditions, *r*(47) = .06, *p* = .688, 95% CI \[-.23, .33\]. Additionally, there was no significant correlation between recall in the draw and draw in color conditions, *r*(47) = .19, *p* = .367, 95% CI \[-.09, .45\].
+
+### c.
+
+Display the results as a correlation matrix.
+
+```{r}
+drawing |>
+  select(write, draw, drawincolor) |>
+  correlation() |>
+  summary(redundant = TRUE) |>
+  display()
+```
+
+### d.
+
+Make a scatterplot for each of the three correlations. Add the line of best fit to each scatterplot.
+
+```{r}
+drawing |>
+  ggplot(aes(x = write, y = draw)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "purple", linetype = "dashed") +
+  labs(x = "Write", y = "Draw") +
+  theme_bw()
+drawing |>
+  ggplot(aes(x = write, y = drawincolor)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "blue", linetype = "dashed") +
+  labs(x = "Write", y = "Draw in Color") +
+  theme_bw()
+drawing |>
+  ggplot(aes(x = draw, y = drawincolor)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "green", linetype = "dashed") +
+  labs(x = "Draw", y = "Draw in Color") +
+  theme_bw()
+```
+
+### e.
+
+Make a bar graph displaying the mean words recalled in each condition. Add error bars showing the 95% confidence interval.
+
+```{r}
+drawing_long <- drawing |>
+  pivot_longer(
+    cols = c(write, draw, drawincolor),
+    names_to = "condition",
+    values_to = "recall"
+  ) |>
+  mutate(condition = factor(condition,
+                            levels = c("write", "draw", "drawincolor")))
+drawing_long |>
+  group_by(condition) |>
+  get_summary_stats(recall) |>
+  ggplot(aes(x = condition, y = mean, group = condition)) +
+  geom_col(aes(fill = condition), show.legend = FALSE) +
+  geom_errorbar(aes(ymin = mean - ci, ymax = mean + ci), width = 0.2) +
+  labs(x = "Condition", y = "Mean Words Recalled") +
+  scale_fill_brewer(palette = "BuGn") +
+  theme_bw()
+```
+
+## 2)
+
+For this question, you'll need the data from **testtaking.csv**. This file reports fictional data based on Katz et al. (1990). This study was designed to examine whether the verbal section of the SAT actually measures verbal comprehension, or just general test-taking skills. Participants were asked to answer multiple-choice comprehension questions without reading the passages the questions were based on. The `score` column indicates the percentage of these questions answered correctly, and the `SAT` column indicates the verbal SAT scores for the same participants.
+
+Please use linear regression to find out whether participants' performance on the multiple-choice questions predicts their verbal SAT scores.
+
+### a.
+
+Make a scatterplot showing the relationship between the two variables. Add the line of best fit.
+
+```{r}
+testtaking |>
+  ggplot(aes(x = score, y = SAT)) +
+  geom_point(color = "black") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "purple", linetype = "dashed") +
+  labs(x = "Multiple-Choice Score", y = "Verbal SAT Score") +
+  theme_bw()
+```
+
+### b.
+
+Find the slope and intercept for the line of best fit.
+
+```{r}
+test_model <- lm(formula = SAT ~ score, data = testtaking)
+
+test_model |>
+  get_regression_table() |>
+  gt()
+```
+
+### c.
+
+Please write out the equation for the line of best fit: Predicted SAT = 373.74 + 4.87(score)
+
+### d.
+
+Let's check some of the assumptions for linear regression. First, make a histogram to check the assumption that the residuals are normally distributed.
+
+```{r}
+test_model |>
+  get_regression_points() |>
+  ggplot(aes(x = residual)) +
+  geom_histogram(fill = "pink", color = "orange", bins = 10) +
+  labs(x = "Residuals", y = "Frequency") +
+  theme_bw()
+```
+
+### e.
+
+Next, make a scatterplot to check the assumption of heteroscedasticity.
+
+```{r}
+test_model |>
+  get_regression_points() |>
+  ggplot(aes(x = score, y = residual)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE,
+              color = "blue", linetype = "dashed") +
+  labs(x = "Multiple-Choice Score", y = "Residuals") +
+  theme_bw()
+```
+
+### f.
+
+Run the hypothesis test to check whether the regression line is a good fit for the data.
+
+```{r}
+test_model |>
+  get_regression_summaries() |>
+  gt() |>
+  fmt_auto()
+```
+
+### g.
+
+Report the results of the linear regression in APA style:
+
+A simple linear regression was conducted to test whether performance on the multiple-choice comprehension questions predicted verbal SAT scores. The regression model was significant, *R*² = .28, *F*(1, 26) = 10.25, *p* = .004, indicating that performance on the multiple-choice questions significantly predicted verbal SAT scores. The slope of the regression line was 4.87, indicating that for each 1-point increase in multiple-choice score, verbal SAT score increased by about 4.87 points. The intercept was 373.74.
+
+## 3)
+
+This question will use the `pokemon` data frame from the `pokemon` package. Please scroll up to the top of your document and add `library(pokemon)` to the first code chunk.
+
+This analysis will focus on the original 151 Pokemon from Generation 1.
+
+### a.
+
+Save a new version of the data frame that only includes Pokemon from Generation 1 (indicated by the `generation_id` column). In addition, please simplify the data frame so that only the following columns are included: `pokemon`, `height`, `weight`, `hp`, `attack`, and `defense`.
+
+```{r}
+pokemon1 <- pokemon |>
+  filter(generation_id == 1) |>
+  select(pokemon, height, weight, hp, attack, defense)
+```
+
+**Please use your data frame from part (a) for all of the remaining questions.**
+
+### b.
+
+Create a correlation matrix that displays the relationships between all of the measures in your data frame from part (a).
+
+```{r}
+pokemon1 |>
+  select(height, weight, hp, attack, defense) |>
+  correlation() |>
+  summary(redundant = TRUE) |>
+  display()
+```
+
+### c.
+
+Do taller Pokemon have better stats? Please test whether height correlates with HP, attack, and defense.
+
+```{r}
+pokemon1 |>
+  correlation(
+    select = "height",
+    select2 = c("hp", "attack", "defense")) |>
+  display()
+```
+
+### d.
+
+Verbally describe the results of the correlational analysis from part (c) and report the statistics in APA style:
+
+There was a significant positive correlation between Pokemon height and HP, *r*(149) = .24, *p* = .003, 95% CI \[.09, .39\]. There was also a significant positive correlation between height and attack, *r*(149) = .31, *p* \< .001, 95% CI \[.16, .45\], and between height and defense, *r*(149) = .36, *p* \< .001, 95% CI \[.21, .49\]. Overall, these results suggest that taller Pokemon tended to have better stats.
+
+### e.
+
+Please use linear regression to find out whether a Pokemon's height predicts its attack. Start by finding the slope and intercept for the line of best fit, then run the hypothesis test to check whether the regression line is a good fit for the data.
+
+```{r}
+attack_model1 <- lm(formula = attack ~ height, data = pokemon1)
+
+attack_model1 |>
+  get_regression_table() |>
+  gt() |>
+  sub_values(values = 0, replacement = "<0.001")
+
+attack_model1 |>
+  get_regression_summaries() |>
+  gt() |>
+  fmt_auto() |>
+  sub_values(values = 0, replacement = "<0.001")
+```
+
+### f.
+
+Report the results of the linear regression from part (e) in APA style:
+
+Linear regression was conducted to test whether a Pokemon’s height predicted its attack. The regression model was significant, *R*² = .094, adjusted *R*² = .088, *F*(1, 149) = 15.53, *p* \< .001, indicating that height significantly predicted attack. The slope of the regression line was 8.539, indicating that for each increase of 1-unit in height, predicted attack increased by about 8.54 points. The intercept was 62.712.
+
+### g.
+
+Next, please conduct a multiple regression analysis that tests whether a Pokemon's height and weight predict its attack. Start by finding the coefficients and intercept for the line of best fit, then run the hypothesis test to check whether the regression line is a good fit for the data.
+
+```{r}
+attack_model2 <- lm(formula = attack ~ height + weight, data = pokemon1)
+
+attack_model2 |>
+  get_regression_table() |>
+  gt()
+
+attack_model2 |>
+  get_regression_summaries() |>
+  gt() |>
+  fmt_auto()
+```
+
+### h.
+
+Report the results of the linear regression from part (g) in APA style:
+
+A multiple regression was conducted to test whether a Pokemon’s height and weight predicted its attack. The overall regression model was significant, *R*² = .214, adjusted *R*² = .203, *F*(2, 148) = 20.16, *p* \< .001, indicating that height and weight together significantly predicted attack. The coefficient for height was 1.914, but this predictor was not significant, *p* = .438. The coefficient for weight was 0.189, indicating that heavier Pokemon tended to have higher attack, and this predictor was significant, *p* \< .001.
+
+### i.
+
+Which is a better fit for the data: the model using only height to predict attack, or the model using both height and weight to predict attack? How do you know?
+
+The model using both height and weight was a better fit because it had the higher adjusted *R*² (.203 vs. .088).
