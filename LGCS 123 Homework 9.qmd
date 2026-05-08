@@ -1,0 +1,321 @@
+---
+title: "Homework #9"
+author: Camila Alfaro
+date: 04/28/2026
+editor: visual
+format:
+  html:
+    error: true
+    embed-resources: true
+    code-overflow: wrap
+brand: 
+  typography: 
+    base: Fira Sans
+    monospace: Fira Code
+editor_options: 
+  chunk_output_type: console
+---
+
+Please submit your completed assignment by **Tuesday, April 28**.
+
+In the code chunk below, use `library()` to load each of the packages you use for this assignment.
+
+```{r}
+#| output: false
+library(tidyverse)
+library(gt)
+library(rstatix)
+```
+
+For this assignment, you'll need the data from two .csv files that are provided on Canvas. Please download those files from Canvas and move them to your working directory. For the sake of organization, you might want to create a folder inside your working directory called something like "Homework 9" and keep the files there.
+
+To import the data from each file, go to the Files tab in the lower right quadrant of RStudio, click the name of the .csv file, and choose Import Dataset. Click Import in the window that pops up. This will run a `read_csv()` function in the console. Copy that function from the console and paste it below. Repeat that for each file: **context.csv** and **testing.csv**.
+
+```{r}
+#| output: false
+context <- read_csv("context.csv")
+View(context)
+testing <- read_csv("testing.csv")
+View(testing)
+```
+
+## 1)
+
+For the first part of the assignment, I want you to get some practice reading about ANOVAs in research papers. Please select a paper that contains at least one ANOVA in the results section. You're welcome to pick your own, or you can choose from the articles in the folder posted on Canvas. After you pick your paper, please read enough of it to allow you to understand the results section -- I recommend reading the abstract, methods, and results, at minimum. If the paper includes more than one experiment, you may select just one (but make sure the analysis for that experiment includes an ANOVA!).
+
+### a.
+
+Which article did you choose?
+
+Erk, S., von Kalckreuth, A., & Walter, H. (2010). *Neural long-term effects of emotion regulation on episodic memory processes*. *Neuropsychologia, 48*, 989–996.
+
+### b.
+
+What type of ANOVA did the researchers run?
+
+A 2 × 2 repeated measures ANOVA was conducted. The article indicates that the researchers ran a two-way ANOVA on individual hit rates with the factors emotion and regulation, and both factors varied within the same participants.
+
+### c.
+
+Which independent variables were included in the analysis, and what were the levels for each? What was the dependent variable?
+
+The independent variables were emotion (levels being negative and neutral) and regulation (levels being regulated and non-regulated). The dependent variable was memory performance, measured as hit rate during the recognition task.
+
+### d.
+
+Summarize the results of the ANOVA. Were there any significant main effects? What about interactions?
+
+The ANOVA found a significant main effect of emotion, with participants remembering more negative than neutral pictures, *F*(1, 15) = 87.2, *p* \< .0001. There was not a significant main effect of regulation, but there was a trend toward lower performance for regulated pictures, *F*(1, 15) = 3.9, *p* = .067. There was also no significant interaction between emotion and regulation, *F*(1, 15) = 0.02, *p* \> .5.
+
+## 2)
+
+For this question, you'll need the data from the file called **context.csv**. This file contains fictional data based on the results of Godden and Baddeley (1975). In this study on context-dependent memory, scuba divers were asked to study lists of words, and later their memory for those words was tested. The locations of the study and test periods were manipulated within-subjects in a 2 x 2 factorial design. In half of the conditions, participants studied the words while on land, while in the other half they studied the words underwater. In half of the conditions, participants took the test while on land, while in the other half they took the test the words underwater. The dependent variable was the number of words correctly recalled on the test.
+
+### a.
+
+Calculate the cell means.
+
+```{r}
+context <- context |>
+  mutate(study = as.factor(study), test = as.factor(test))
+
+context |>
+  group_by(study, test) |>
+  get_summary_stats(memory, type = "mean") |>
+  gt(groupname_col = "study", rowname_col = "test", row_group_as_column = TRUE)
+```
+
+### b.
+
+Calculate the marginal means.
+
+```{r}
+context_study <- context |>
+  group_by(participant, study) |>
+  summarize(memory = mean(memory), .groups = "drop")
+
+context_study |>
+  group_by(study) |>
+  get_summary_stats(memory, type = "mean") |>
+  gt()
+
+context_test <- context |>
+  group_by(participant, test) |>
+  summarize(memory = mean(memory), .groups = "drop")
+
+context_test |>
+  group_by(test) |>
+  get_summary_stats(memory, type = "mean") |>
+  gt()
+```
+
+### c.
+
+Make a bar graph that displays the cell means for each condition. Add error bars showing standard error of the mean.
+
+```{r}
+context |>
+  group_by(study, test) |>
+  get_summary_stats(memory) |>
+  ggplot(aes(x = study, y = mean, group = test)) +
+  geom_col(aes(fill = test), position = "dodge") +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2,
+    position = position_dodge(width = 0.9)) +
+  labs(x = "Study Context", y = "Mean Words Recalled", fill = "Test Context") +
+  scale_fill_brewer(palette = "BuGn") +
+  theme_bw()
+```
+
+### d.
+
+Make a line graph to help you visualize any potential interaction.
+
+```{r}
+context |>
+  group_by(study, test) |>
+  get_summary_stats(memory) |>
+  ggplot(aes(x = study, y = mean, group = test)) +
+  geom_line(aes(color = test)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  labs(x = "Study Context", y = "Mean Words Recalled", color = "Test Context") +
+  scale_color_brewer(palette = "OrRd") +
+  theme_bw()
+```
+
+### e.
+
+Which type of ANOVA would be most appropriate? How do you know?
+
+A 2 x 2 repeated measures ANOVA would be most appropriate because there are two independent variables (study & test), each with two levels, and both were manipulated within-subjects, meaning the same subjects completed all four conditions.
+
+### f.
+
+Please run the ANOVA.
+
+```{r}
+context |>
+  anova_test(dv = memory, wid = participant, within = c(study, test), 
+    effect.size = "pes") |> 
+  get_anova_table() |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+```
+
+### g.
+
+Is it necessary to run post hoc tests to help you understand the results of the ANOVA? Please explain why or why not. If post hoc tests are necessary, please run them below:
+
+Since each IV has only two levels, post hoc tests are not necessary for the main effects. Despite this, since there is a significant interaction, it is still necessary to run post hoc tests to describe the simple effects.
+
+```{r}
+context |>
+  group_by(study) |>
+  t_test(formula = memory ~ test, paired = TRUE) |>
+  adjust_pvalue() |>
+  add_significance() |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+```
+
+### h.
+
+Write a summary verbally describing the results of the ANOVA (plus post hoc *t*-tests, if needed) in APA style:
+
+A 2 x 2 repeated measures ANOVA was conducted to analyze the effects of study context (land vs. underwater) and test context (land vs. underwater) on memory performance. There was no significant main effect of study context, *F(1, 19) = 2.31, p = .145, ηp² = .11*, and no significant main effect of test context, *F(1, 19) = 0.56, p = .465, ηp² = .03.* However, there was a significant interaction between study context and test context, *F(1, 19) = 27.78, p \< .001, ηp² = .59.* Post hoc paired-samples *t*-tests with *p*-values adjusted using the Holm correction indicated that for words studied on land, recall was significantly better when testing also occurred on land than underwater, *t(19) = 3.52, p = .004*. Similarly, for words studied underwater, recall was significantly better when testing also occurred underwater than on land, *t(19) = -3.59, p = .004.* These results suggest that memory was better when the study and test contexts matched.
+
+## 3)
+
+For this question, you'll need the data from the file called **testing.csv**. This file contains fictional data based on the results of Roediger and Karpicke (2006). This study on the testing effect used a 2 x 3 factorial design. Participants were asked to study articles about factual topics ("The Sun" and "Sea Otters").  Learning strategy was manipulated within-subjects. In one condition, participants studied the article for 7 minutes, and then studied it again for another 7 minutes. In the other condition, participants studied the article for 7 minutes, and then took a test on it for 7 minutes. Delay between the learning session and the final test was manipulated between-subjects. One group of participants took the test after a 5-minute delay, another group took the test after a 2-day delay, and the last group took the test after a 1-week delay. The dependent variable was the score on the final test.
+
+Before you begin, I recommend that you run the code below. This will tell R to order the levels of the delay variable from shortest to longest, rather than alphabetically. This will generally make the output of various functions easier to interpret.
+
+```{r}
+testing <- testing |> 
+  mutate(delay = fct_relevel(delay, "fivemin", "twodays", "oneweek"))
+```
+
+### a.
+
+Calculate the cell means.
+
+```{r}
+testing |>
+  group_by(delay, strategy) |>
+  get_summary_stats(score, type = "mean") |>
+  gt(groupname_col = "delay",
+    rowname_col = "strategy",
+    row_group_as_column = TRUE)
+```
+
+### b.
+
+Calculate the marginal means.
+
+```{r}
+testing |>
+  group_by(strategy) |>
+  get_summary_stats(score, type = "mean") |>
+  gt()
+
+testing_delay <- testing |>
+  group_by(participant, delay) |>
+  summarize(score = mean(score), .groups = "drop")
+
+testing_delay |>
+  group_by(delay) |>
+  get_summary_stats(score, type = "mean") |>
+  gt()
+```
+
+### c.
+
+Make a bar graph that displays the cell means for each condition. Add error bars showing the 95% confidence interval.
+
+```{r}
+testing |>
+  group_by(delay, strategy) |>
+  get_summary_stats(score) |>
+  ggplot(aes(x = delay, y = mean, group = strategy)) +
+  geom_col(aes(fill = strategy), position = "dodge") +
+  geom_errorbar(
+    aes(ymin = mean - ci, ymax = mean + ci),
+    width = 0.2,
+    position = position_dodge(width = 0.9)) +
+  labs(x = "Delay",
+    y = "Mean Final Test Score",
+    fill = "Strategy") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme_bw()
+```
+
+### d.
+
+Make a line graph to help you visualize any potential interaction.
+
+```{r}
+testing |>
+  group_by(delay, strategy) |>
+  get_summary_stats(score) |>
+  ggplot(aes(x = delay, y = mean, group = strategy)) +
+  geom_line(aes(color = strategy)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2) +
+  labs(x = "Delay",
+    y = "Mean Final Test Score",
+    color = "Strategy") +
+  scale_color_brewer(palette = "PuBu") +
+  theme_bw()
+```
+
+### e.
+
+Which type of ANOVA would be most appropriate? How do you know?
+
+A 2 x 3 mixed factorial ANOVA would be most appropriate since there are two independent variables. Strategy was manipulated within-subjects because the same participants completed both learning strategy conditions, while delay was manipulated between-subjects because different groups of participants took the final test after different delays.
+
+### f.
+
+Please run the ANOVA.
+
+```{r}
+testing |>
+  anova_test(
+    dv = score,
+    wid = participant,
+    between = delay,
+    within = strategy,
+    effect.size = "pes") |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+```
+
+### g.
+
+Is it necessary to run post hoc tests to help you understand the results of the ANOVA? Please explain why or why not. If post hoc tests are necessary, please run them below:
+
+Yes, post hoc tests are necessary because delay has three levels, so the significant main effect of delay cannot be fully explained without comparing them. Also, because there is a significant interaction, simple-effects tests are needed to explain how the effect of strategy changes across delay conditions.
+
+```{r}
+testing_delay |>
+  t_test(formula = score ~ delay, var.equal = TRUE) |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+
+testing |>
+  group_by(delay) |>
+  t_test(formula = score ~ strategy, paired = TRUE) |>
+  adjust_pvalue() |>
+  add_significance() |>
+  gt() |>
+  fmt_auto() |>
+  sub_small_vals(threshold = .001)
+```
+
+### h.
+
+Write a summary verbally describing the results of the ANOVA (plus post hoc *t*-tests, if needed) in APA style:
+
+A 2 x 3 mixed factorial ANOVA was conducted to analyze the effects of learning strategy and delay on final test scores. There was a significant main effect of delay, *F(2, 117) = 36.61, p \< .001, ηp² = .38.* Post hoc t-tests with p-values ​​adjusted using the Holm correction indicated that scores were significantly higher after a 5-minute delay than after a 2-day delay, t(78) = 6.07, p \< .001, and a 1-week delay, t(78) = 8.65, p \< .001. Scores were also significantly higher after a 2-day delay than after a 1-week delay, t(78) = 2.29, p = .025. There was also a significant main effect of strategy, *F(1, 117) = 12.24, p \< .001, ηp² = .09*, with higher overall scores in the study-test condition than in the study-study condition. In addition, there was a significant interaction between delay and strategy, *F(2, 117) = 14.32, p \< .001, ηp² = .20.* Post hoc paired-samples t-tests with p-values ​​adjusted using the Holm correction indicated that after a 5-minute delay, scores were significantly higher in the study-study condition than in the study-test condition, t(39) = 2.23, p = .031. However, after a 2-day delay, scores were significantly higher in the study-test condition than in the study-study condition, t(39) = 5.99, p \< .001, and the same pattern was found after a 1-week delay, t(39) = 2.91, p = .012. These results suggest that repeated studying helps more on an immediate test, while testing improves retention over longer delays.
